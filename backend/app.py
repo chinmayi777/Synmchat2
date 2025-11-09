@@ -9,9 +9,9 @@ import json
 import pickle
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score
+from sklearn.calibration import CalibratedClassifierCV
 import numpy as np
 
 # Initialize FastAPI app
@@ -37,284 +37,220 @@ if os.path.exists(STATIC_DIR):
 async def read_root():
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
-# Global variables for model and vectorizer
+# Global variables
 vectorizer = None
 model = None
 label_encoder = None
+reverse_label_encoder = None
 df = None
+home_remedies = {}
 
+# Load Home Remedies JSONL
+def load_home_remedies():
+    global home_remedies
+    remedies_file = "home_remedies.jsonl"
+
+    if not os.path.exists(remedies_file):
+        print("⚠️ No home_remedies.jsonl found.")
+        return
+
+    with open(remedies_file, "r", encoding="utf-8") as f:
+        for line in f:
+            try:
+                data = json.loads(line)
+                symptom = data["symptom"].lower()
+                remedy = data["remedy"]
+
+                if symptom not in home_remedies:
+                    home_remedies[symptom] = []
+
+                home_remedies[symptom].append(remedy)
+
+            except:
+                continue
+
+    print(f"✅ Loaded {len(home_remedies)} home remedies.")
+
+# Preprocess input: fix typos & synonyms
+def preprocess_input(text):
+    text = text.lower().strip()
+    corrections = {
+        "feve": "fever",
+        "joint ache": "joint pain",
+        "joint hurting": "joint pain",
+        "urinate pain": "burning while urinating",
+        "stomach ache": "abdominal pain",
+        "head ache": "headache",
+        # Add more as needed
+    }
+    for wrong, right in corrections.items():
+        text = text.replace(wrong, right)
+    return text
+
+# Load and prepare dataset
 def load_and_prepare_data():
-    """Load dataset and prepare for training"""
     global df
-    
-    data_path = os.path.join("backend", "train.jsonl")
+    data_path = "train.jsonl"
     if not os.path.exists(data_path):
         raise FileNotFoundError(f"Dataset not found at: {data_path}")
-    
+
     data = []
     with open(data_path, "r", encoding="utf-8") as f:
         for line in f:
             try:
                 data.append(json.loads(line))
-            except json.JSONDecodeError:
-                print("⚠️ Skipped invalid JSON line")
-    
+            except:
+                continue
+
     df = pd.DataFrame(data)
-    
-    # Clean data
     df = df.dropna(subset=['input_text', 'output_text'])
     df['input_text'] = df['input_text'].str.lower().str.strip()
     df['output_text'] = df['output_text'].str.strip()
-    
-    print(f"✅ Loaded {len(df)} symptom-diagnosis pairs from dataset.")
     return df
 
+# Train model with calibration
 def train_model():
-    """Train the ML model on the dataset"""
-    global vectorizer, model, label_encoder, df
-    
-    print("\n🔄 Training machine learning model...")
-    
-    # Prepare data
+    global vectorizer, model, label_encoder, reverse_label_encoder, df
+
     X = df['input_text'].values
     y = df['output_text'].values
-    
-    # Create label mapping (for diagnosis names)
+
     unique_diagnoses = list(set(y))
     label_encoder = {diagnosis: idx for idx, diagnosis in enumerate(unique_diagnoses)}
     reverse_label_encoder = {idx: diagnosis for diagnosis, idx in label_encoder.items()}
-    
-    # Encode labels
-    y_encoded = [label_encoder[diagnosis] for diagnosis in y]
-    
-    print(f"📊 Dataset: {len(X)} samples, {len(unique_diagnoses)} unique diagnoses")
-    
-    # Split data
+    y_encoded = [label_encoder[d] for d in y]
+
     X_train, X_test, y_train, y_test = train_test_split(
         X, y_encoded, test_size=0.2, random_state=42, stratify=y_encoded
     )
-    
-    # Create TF-IDF vectorizer
-    vectorizer = TfidfVectorizer(
-        max_features=1000,
-        ngram_range=(1, 2),  # Use unigrams and bigrams
-        min_df=2,
-        max_df=0.8,
-        stop_words='english'
-    )
-    
-    # Fit and transform training data
+
+    vectorizer = TfidfVectorizer(max_features=1000, ngram_range=(1, 2), stop_words='english')
     X_train_tfidf = vectorizer.fit_transform(X_train)
     X_test_tfidf = vectorizer.transform(X_test)
-    
-    # Train Naive Bayes classifier
-    print("🎯 Training Naive Bayes classifier...")
-    model = MultinomialNB(alpha=0.1)
-    model.fit(X_train_tfidf, y_train)
-    
-    # Evaluate
-    y_pred = model.predict(X_test_tfidf)
-    accuracy = accuracy_score(y_test, y_pred)
-    
-    print(f"✅ Model trained successfully!")
-    print(f"📈 Accuracy: {accuracy * 100:.2f}%")
-    print(f"🧠 Vocabulary size: {len(vectorizer.get_feature_names_out())}")
-    
-    # Save model and vectorizer
+
+    base_model = MultinomialNB(alpha=0.1)
+    base_model.fit(X_train_tfidf, y_train)
+
+    # Calibrate the model for better confidence percentages
+    calibrated_model = CalibratedClassifierCV(base_model, method='isotonic', cv='prefit')
+    calibrated_model.fit(X_test_tfidf, y_test)
+    model = calibrated_model
+
+    accuracy = accuracy_score(y_test, model.predict(X_test_tfidf))
+    print(f"✅ Model trained. Accuracy on validation set: {accuracy*100:.2f}%")
+
+    # Save vectorizer and model
     model_dir = os.path.join("backend", "models")
     os.makedirs(model_dir, exist_ok=True)
-    
+
     with open(os.path.join(model_dir, "vectorizer.pkl"), "wb") as f:
         pickle.dump(vectorizer, f)
-    
     with open(os.path.join(model_dir, "model.pkl"), "wb") as f:
         pickle.dump(model, f)
-    
     with open(os.path.join(model_dir, "label_encoder.pkl"), "wb") as f:
         pickle.dump((label_encoder, reverse_label_encoder), f)
-    
-    print("💾 Model saved to backend/models/")
-    
+
     return reverse_label_encoder
 
+# Load trained model
 def load_trained_model():
-    """Load pre-trained model if exists"""
-    global vectorizer, model, label_encoder
-    
+    global vectorizer, model, label_encoder, reverse_label_encoder
     model_dir = os.path.join("backend", "models")
-    vectorizer_path = os.path.join(model_dir, "vectorizer.pkl")
-    model_path = os.path.join(model_dir, "model.pkl")
-    encoder_path = os.path.join(model_dir, "label_encoder.pkl")
-    
-    if os.path.exists(vectorizer_path) and os.path.exists(model_path):
-        with open(vectorizer_path, "rb") as f:
+    try:
+        with open(os.path.join(model_dir, "vectorizer.pkl"), "rb") as f:
             vectorizer = pickle.load(f)
-        
-        with open(model_path, "rb") as f:
+        with open(os.path.join(model_dir, "model.pkl"), "rb") as f:
             model = pickle.load(f)
-        
-        with open(encoder_path, "rb") as f:
+        with open(os.path.join(model_dir, "label_encoder.pkl"), "rb") as f:
             label_encoder, reverse_label_encoder = pickle.load(f)
-        
-        print("✅ Loaded pre-trained model from disk")
         return reverse_label_encoder
-    
-    return None
+    except:
+        return None
 
+# Predict diagnosis
 def predict_diagnosis(user_input, top_n=3):
-    """Predict diagnosis using trained ML model"""
-    global vectorizer, model
-    
-    # Transform user input
-    user_tfidf = vectorizer.transform([user_input.lower().strip()])
-    
-    # Get probability predictions for all classes
+    user_input = preprocess_input(user_input)  # ✅ Preprocess input before prediction
+    user_tfidf = vectorizer.transform([user_input])
     probabilities = model.predict_proba(user_tfidf)[0]
-    
-    # Get top N predictions
+
     top_indices = np.argsort(probabilities)[-top_n:][::-1]
-    
     predictions = []
+
     for idx in top_indices:
-        confidence = probabilities[idx] * 100
-        if confidence > 5:  # Only show predictions with >5% confidence
+        pred_conf = probabilities[idx] * 100
+        if pred_conf > 5:
             predictions.append({
                 'diagnosis': reverse_label_encoder[idx],
-                'confidence': float(confidence),
-                'model_type': 'Naive Bayes Classifier'
+                'confidence': float(pred_conf)
             })
-    
+
     return predictions
 
+# Generate response with remedies
 def generate_ml_response(user_input, predictions):
-    """Generate a clean, concise formatted ML output"""
     if not predictions:
-        return {
-            "response": (
-                f"Based on your symptoms: \"{user_input}\", I couldn't confidently match them "
-                "to a known condition in my database.\n\n"
-                "If your symptoms persist or worsen, please consult a doctor."
-            ),
-            "predictions": []
-        }
+        return {"response": f"Based on your symptoms: \"{user_input}\" I could not match any condition."}
 
-    # Start response
-    response_text = f"<b>Based on your symptoms:</b> \"{user_input}\"<br><br>"
-    response_text += "<b>🩺 Possible Conditions:</b><br>"
+    lines = []
+    lines.append(f'Based on your symptoms: "{user_input}"\n')
+    lines.append("🩺 Possible Conditions:")
 
-    for pred in predictions:
-        # Determine severity level
-        confidence = pred["confidence"]
-        if confidence > 60:
-            severity = "High severity"
-        elif confidence > 30:
-            severity = "Moderate severity"
-        else:
-            severity = "Low severity"
+    for p in predictions:
+        cond = p['diagnosis']
+        conf = p['confidence']
+        severity = (
+            "High severity" if conf > 60 else
+            "Moderate severity" if conf > 30 else
+            "Low severity"
+        )
+        lines.append(f"• {cond} — Confidence: {conf:.1f}% ({severity})")
 
-        # Add each disease line
-        response_text += f"  <li><b>{pred['diagnosis']}</b> — Confidence: {confidence:.1f}% ({severity})</li><br>"
+    # Match remedies
+    matched_remedies = []
+    for symptom, remedy_list in home_remedies.items():
+        if symptom in user_input.lower():
+            matched_remedies.extend(remedy_list)
 
-    response_text += (
-        "\n<i><b>Recommendation:</i></b><br>"
-        "If symptoms <b>persist or worsen</b>, please <b>consult a doctor</b> for professional medical advice."
-    )
+    if not matched_remedies:
+        matched_remedies = [
+            "Rest well",
+            "Drink plenty of fluids",
+            "Monitor symptoms"
+        ]
 
-    return {
-        "response": response_text,
-        "predictions": predictions,
-        "ml_model": "Naive Bayes",
-        "training_samples": len(df)
-    }
+    lines.append("\n💡 Home Remedies:")
+    for r in matched_remedies[:3]:
+        lines.append(f"- {r}")
 
+    lines.append("\n🔔 Recommendation:")
+    lines.append("If symptoms persist or worsen, please consult a doctor.")
 
-# Input model
+    return {"response": "\n".join(lines)}
+
+# Pydantic model
 class SymptomRequest(BaseModel):
     symptoms: str
 
+# Startup event
 @app.on_event("startup")
 async def startup_event():
-    """Initialize and train model on startup"""
     global reverse_label_encoder
-    
-    # Load data
+    load_home_remedies()
     load_and_prepare_data()
-    
-    # Try to load pre-trained model
     reverse_label_encoder = load_trained_model()
-    
-    # If no pre-trained model, train new one
     if reverse_label_encoder is None:
         reverse_label_encoder = train_model()
 
+# Analyze endpoint
 @app.post("/analyze")
 async def analyze_symptoms(request: SymptomRequest):
-    user_input = request.symptoms.strip()
-    
-    if not user_input:
-        raise HTTPException(status_code=400, detail="Symptoms cannot be empty.")
-    
-    if len(user_input) < 5:
-        raise HTTPException(status_code=400, detail="Please provide more detailed symptoms.")
-    
     try:
-        # Get ML predictions
-        predictions = predict_diagnosis(user_input, top_n=3)
-        
-        # Generate response
-        result = generate_ml_response(user_input, predictions)
-        
-        return result
-    
+        predictions = predict_diagnosis(request.symptoms, top_n=3)
+        return generate_ml_response(request.symptoms, predictions)
     except Exception as e:
-        print(f"❌ Error analyzing symptoms: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"An error occurred while analyzing symptoms: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/retrain")
-async def retrain_model():
-    """Endpoint to retrain the model"""
-    try:
-        global reverse_label_encoder
-        reverse_label_encoder = train_model()
-        return {
-            "status": "success",
-            "message": "Model retrained successfully",
-            "training_samples": len(df)
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error retraining model: {str(e)}"
-        )
-
-@app.get("/health")
-async def health_check():
-    return {
-        "status": "healthy",
-        "dataset_size": len(df) if df is not None else 0,
-        "model_trained": model is not None,
-        "model_type": "Naive Bayes Classifier",
-        "message": "ML Medical Symptom Analyzer is running"
-    }
-
-@app.get("/model-info")
-async def model_info():
-    """Get information about the trained model"""
-    if model is None or vectorizer is None:
-        raise HTTPException(status_code=503, detail="Model not trained yet")
-    
-    return {
-        "model_type": "Multinomial Naive Bayes",
-        "vocabulary_size": len(vectorizer.get_feature_names_out()),
-        "training_samples": len(df),
-        "unique_diagnoses": len(label_encoder),
-        "features": "TF-IDF (unigrams + bigrams)",
-        "status": "trained"
-    }
-
+# Run app
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

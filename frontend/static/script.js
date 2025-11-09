@@ -103,7 +103,6 @@ function loadSession(sessionId) {
         });
     }
 
-    // Highlight active session
     document.querySelectorAll('.chat-history-item').forEach(item => {
         item.classList.remove('active');
         if (item.dataset.sessionId === sessionId) {
@@ -128,7 +127,7 @@ function showWelcomeMessage() {
 }
 
 // ============================
-//  SEND MESSAGE (API CONNECTED)
+//  SEND MESSAGE
 // ============================
 async function sendMessage() {
     const message = messageInput.value.trim();
@@ -154,7 +153,6 @@ async function sendMessage() {
     messageInput.value = '';
     messageInput.style.height = 'auto';
 
-    // Show typing placeholder
     const typingDiv = document.createElement('div');
     typingDiv.className = 'message bot typing';
     typingDiv.innerHTML = '<div class="message-content">Analyzing your symptoms...</div>';
@@ -162,7 +160,6 @@ async function sendMessage() {
     scrollToBottom();
 
     try {
-        // === MAKE API REQUEST TO BACKEND ===
         const response = await fetch('http://127.0.0.1:8000/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -170,26 +167,21 @@ async function sendMessage() {
         });
 
         const data = await response.json();
-
         typingDiv.remove();
 
-        if (!data || !data.response) {
-            displayMessage("⚠️ Sorry, I couldn't analyze your symptoms.", 'bot');
-            return;
-        }
-
-        // Combine diagnoses + GPT summary
         let botHTML = "";
-        if (data.suggested_diagnoses && data.suggested_diagnoses.length > 0) {
-            botHTML += `
-                <div class="diagnosis-list">
-                    <h4>🩺 Possible Conditions:</h4>
-                    <ul>${data.suggested_diagnoses.map(d => `<li>${d}</li>`).join('')}</ul>
-                </div>
-            `;
+
+        // ✅ NEW FIX — Format diagnosis results correctly
+        if (Array.isArray(data.response)) {
+            botHTML += `<div class="diagnosis-list"><h4>🩺 Possible Conditions:</h4><ul>`;
+            data.response.forEach(item => {
+                botHTML += `<li>${item.diagnosis} <span style="color: gray">(${item.confidence.toFixed(2)}%)</span></li>`;
+            });
+            botHTML += `</ul></div>`;
+        } else {
+            botHTML += `<div class="diagnosis-response">${data.response}</div>`;
         }
 
-        botHTML += `<div class="diagnosis-response">${data.response}</div>`;
         displayMessage(botHTML, 'bot');
 
         if (session) {
@@ -198,7 +190,6 @@ async function sendMessage() {
         }
 
     } catch (error) {
-        console.error('Error:', error);
         typingDiv.remove();
         displayMessage("⚠️ Error: Could not connect to the server.", 'bot');
     }
@@ -214,12 +205,11 @@ function displayMessage(text, type) {
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
 
-    // Check if the message includes HTML (for bot responses)
-    if (type === 'bot' && text.includes('<')) {
-        contentDiv.innerHTML = text;
-    } else {
-        contentDiv.textContent = text;
-    }
+// Preserve formatting & newlines
+contentDiv.style.whiteSpace = "pre-wrap";
+
+contentDiv.innerHTML = text;
+
 
     messageDiv.appendChild(contentDiv);
     chatMessages.appendChild(messageDiv);
@@ -251,15 +241,9 @@ function renderChatHistory() {
         historyItem.dataset.sessionId = session.id;
 
         const date = new Date(session.timestamp);
-        const timeStr = date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric'
-        });
+        const timeStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-        historyItem.innerHTML = `
-            <h3>${session.title}</h3>
-            <p>${timeStr}</p>
-        `;
+        historyItem.innerHTML = `<h3>${session.title}</h3><p>${timeStr}</p>`;
 
         historyItem.addEventListener('click', () => loadSession(session.id));
         chatHistory.appendChild(historyItem);
