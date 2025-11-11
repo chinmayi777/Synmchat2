@@ -207,6 +207,44 @@ body {
     right: 99%;
     animation-delay: -8s;
 }  
+.book-btn {
+    position: fixed !important;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+
+    display: inline-flex !important;   /* keeps it only as wide as content */
+    align-items: center;
+    justify-content: center;
+
+    background: linear-gradient(to right, #68d391, #38b2ac);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+
+    width: auto !important;           /* forces content width */
+    max-width: fit-content !important;/* prevents full width */
+    height: auto !important;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.book-btn:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+    transition: all 0.2s ease;
+}
+.btn btn-info{
+    position: fixed !important;
+    top: 70px;
+    right: 20px;
+    z-index: 9999;
+    width:50px !important;
+    height:50px !important;
+}
 
 @keyframes sparkleFloat {
     0%, 100% {

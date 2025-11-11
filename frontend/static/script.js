@@ -120,7 +120,7 @@ function loadSession(sessionId) {
 function showWelcomeMessage() {
     chatMessages.innerHTML = `
         <div class="welcome-message">
-            <div class="sparkle-icon">✨</div>
+            <div class="sparkle-icon">🥼</div>
             <h1>Welcome to SympChat</h1>
             <p>How can I help you today?</p>
         </div>

@@ -37,6 +37,14 @@ if os.path.exists(STATIC_DIR):
 async def read_root():
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
+@app.get("/frontend/{filename}")
+async def serve_frontend_files(filename: str):
+    file_path = os.path.join(FRONTEND_DIR, filename)
+    if os.path.exists(file_path):
+        return FileResponse(file_path)
+    else:
+        return {"detail": "Not Found"}
+
 # Global variables for model and vectorizer
 vectorizer = None
 model = None
@@ -217,7 +225,7 @@ def generate_ml_response(user_input, predictions):
 
     response_text += (
         "\n<i><b>Recommendation:</i></b><br>"
-        "If symptoms <b>persist or worsen</b>, please <b>consult a doctor</b> for professional medical advice."
+        """If symptoms <b>persist or worsen</b>, please <a href= "/frontend/doctors.html" target="_blank"> <b> consult a doctor</b></a> for professional medical advice."""
     )
 
     return {
