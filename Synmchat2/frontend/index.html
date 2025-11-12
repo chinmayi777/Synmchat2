@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sympthons Chat</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
+<body>
+    <div class="background-animation">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+        <div class="orb orb-5"></div>
+        <div class="sparkle sparkle-1">🩺</div>
+        <div class="sparkle sparkle-2">💉</div>
+        <div class="sparkle sparkle-3">🩹</div>
+        <div class="sparkle sparkle-4">💊</div>
+        <div class="sparkle sparkle-5">🩹</div>
+        <div class="sparkle sparkle-6">❤️‍🩹</div>
+        <div class="sparkle sparkle-7">🩺</div>
+        <div class="sparkle sparkle-8">💉</div>
+        <div class="sparkle sparkle-9">💊</div>
+        <div class="sparkle sparkle-10">❤️‍🩹</div>
+        <div class="sparkle sparkle-11">🩺</div>
+        <div class="sparkle sparkle-12">💉</div>
+        <div class="sparkle sparkle-13">🩹</div>
+        <div class="sparkle sparkle-14">💊</div>
+        <div class="sparkle sparkle-15">🩹</div>
+        <div class="sparkle sparkle-16">❤️‍🩹</div>
+        <div class="sparkle sparkle-17">💉</div>
+        <div class="sparkle sparkle-18">🩺</div>
+        <div class="sparkle sparkle-19">💊</div>
+        <div class="sparkle sparkle-20">❤️‍🩹</div>
+    </div>
+    <!-- <div class="container">
+  <span>🩺</span>
+  <span>💉</span>
+  <span>🩹</span>
+  <span>💊</span>
+</div> -->
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Chat History</h2>
+                <button class="new-chat-btn" id="newChatBtn">
+                    <span>+</span> New Chat
+                </button>
+            </div>
+            
+            <div class="chat-history" id="chatHistory">
+                <!-- Chat history items will be added here -->
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="avatar">👤</div>
+                    <span>User</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-container">
+            <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+            <aside id="sidebar">
+            <button id="sidebarCloseBtn" class="sidebar-close-btn">&times;</button>
+  
+            <div id="chatHistory"></div>
+            </aside>
+            
+            <a href= "/frontend/doctors.html" target="_blank"><button class="book-btn" style="width: 20px; height: 20px;">Book an appointment</button></a>
+            <div id="overlay"></div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <div class="sparkle-icon"></div>
+                    <h1>Welcome to Sympthons Chat</h1>
+                    <p>How can I help you today?</p>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <textarea 
+                        id="messageInput" 
+                        placeholder="Type your message here..." 
+                        rows="1"
+                    ></textarea>
+                    <button class="send-btn" id="sendBtn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <footer class="footer">
+        <p>&copy; Chat can make mistakes so double check it.</p>
+    <script src="/static/script.js"></script>
+</body>
+</html>
