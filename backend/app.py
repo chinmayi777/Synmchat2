@@ -225,7 +225,7 @@ def generate_ml_response(user_input, predictions):
 
     response_text += (
         "\n<i><b>Recommendation:</i></b><br>"
-        """If symptoms <b>persist or worsen</b>, please <a href= "/frontend/doctors.html" target="_blank"> <b> consult a doctor</b></a> for professional medical advice."""
+        """If symptoms <b>persist or worsen</b>, please <b> consult a doctor</b></a> for professional medical advice."""
     )
 
     return {

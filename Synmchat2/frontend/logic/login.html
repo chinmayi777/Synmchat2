@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sympthons Chat</title>
+
+  <!-- Inline minimal fallback so you see the colored background even if styles.css fails -->
+  <style>
+    /* tiny fallback to show gradient background while debugging */
+    html,body{height:100%}
+    body{background:linear-gradient(135deg,#e0f7fa 0%,#e8f5e9 25%,#f1f8e9 50%,#e1f5fe 75%,#e0f2f1 100%);font-family:Segoe UI, Tahoma, Geneva, Verdana, sans-serif;margin:0}
+  </style>
+
+  <!-- External stylesheet (must be in same folder as index.html) -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- LOGIN SCREEN (overlay) -->
+  <div id="loginScreen" aria-hidden="false">
+    <div id="loginOverlay"></div>
+
+    <div id="loginCard" role="dialog" aria-labelledby="loginTitle" aria-modal="true">
+      <header id="loginHeader">
+        <h1 id="loginTitle">Welcome to Sympthons Chat</h1>
+        <p class="login-subtitle" id="loginSubtitle">Please sign in to continue — try a demo account below or register.</p>
+      </header>
+
+      <form id="loginForm" autocomplete="off" novalidate>
+        <div class="form-row">
+          <label for="usernameInput">Username or Email</label>
+          <input id="usernameInput" name="username" type="text" placeholder="Enter username or email" required />
+        </div>
+
+        <div class="form-row">
+          <label for="passwordInput">Password</label>
+          <div class="password-row">
+            <input id="passwordInput" name="password" type="password" placeholder="Enter password" required />
+            <button type="button" id="togglePassword" aria-label="Show password">👁</button>
+          </div>
+        </div>
+
+        <div class="form-row form-actions">
+          <button type="button" id="loginBtn" class="primary-btn">Log in</button>
+          <button type="button" id="registerBtn" class="secondary-btn">Register</button>
+        </div>
+
+        <div id="loginMessage" role="status" aria-live="polite"></div>
+      </form>
+
+      <section id="demoAccounts" aria-label="Demo accounts">
+        <h2 class="demo-title">Demo accounts (click to autofill)</h2>
+        <ul>
+          <li><button type="button" class="demo-account" data-user="alice" data-pass="alice123">alice / alice123</button></li>
+          <li><button type="button" class="demo-account" data-user="bob" data-pass="bob123">bob / bob123</button></li>
+          <li><button type="button" class="demo-account" data-user="guest" data-pass="guest">guest / guest</button></li>
+        </ul>
+      </section>
+
+      <footer id="loginFooter">
+        <p class="small">This is a local UI-only login for testing.</p>
+      </footer>
+    </div>
+  </div>
+  <!-- END LOGIN SCREEN -->
+
+  <!-- Animated background -->
+  <div class="background-animation">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+      <div class="orb orb-4"></div>
+      <div class="orb orb-5"></div>
+      <div class="sparkle sparkle-1">✨</div>
+      <div class="sparkle sparkle-2">✨</div>
+      <div class="sparkle sparkle-3">✨</div>
+      <div class="sparkle sparkle-4">✨</div>
+      <div class="sparkle sparkle-5">✨</div>
+  </div>
+
+  <!-- CHAT UI -->
+  <div class="app-container">
+      <aside class="sidebar" id="sidebar">
+          <div class="sidebar-header">
+              <h2>Chat History</h2>
+              <button class="new-chat-btn" id="newChatBtn"><span>+</span> New Chat</button>
+          </div>
+          
+          <div class="chat-history" id="chatHistory"></div>
+
+          <div class="sidebar-footer">
+              <div class="user-info">
+                  <div class="avatar">👤</div>
+                  <span id="sidebarUsername">User</span>
+              </div>
+          </div>
+      </aside>
+
+      <main class="chat-container">
+          <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+
+          <!-- inner aside renamed to avoid duplicate id -->
+          <aside id="sidebarInner" class="sidebar-inner">
+            <button id="sidebarCloseBtn" class="sidebar-close-btn" aria-label="Close sidebar">&times;</button>
+            <div id="chatHistoryInner"></div>
+          </aside>
+
+          <div id="overlay"></div>
+
+          <div class="chat-messages" id="chatMessages">
+              <div class="welcome-message">
+                  <div class="sparkle-icon">✨</div>
+                  <h1>Welcome to Sympthons Chat</h1>
+                  <p>How can I help you today?</p>
+              </div>
+          </div>
+
+          <div class="input-container">
+              <div class="input-wrapper">
+                  <textarea id="messageInput" placeholder="Type your message here..." rows="1"></textarea>
+                  <button class="send-btn" id="sendBtn" type="button">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                          <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                  </button>
+              </div>
+          </div>
+      </main>
+  </div>
+
+  <!-- script (defer so page paints before executing) -->
+  <script defer src="script.js"></script>
+</body>
+</html>
