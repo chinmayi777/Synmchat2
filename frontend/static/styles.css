@@ -450,7 +450,6 @@ body {
 .sparkle-icon {
     font-size: 64px;
     margin-bottom: 20px;
-    animation: sparkle 3s infinite;
     filter: drop-shadow(0 0 20px rgba(129, 212, 250, 0.5));
 }
 
@@ -483,7 +482,6 @@ body {
 .message {
     display: flex;
     gap: 12px;
-    animation: slideIn 0.4s ease;
 }
 
 @keyframes slideIn {

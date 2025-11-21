@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sympthons Chat</title>
+
+  <!-- Inline minimal fallback so you see the colored background even if styles.css fails -->
+  <style>
+    /* tiny fallback to show gradient background while debugging */
+    html,body{height:100%}
+    body{background:linear-gradient(135deg,#e0f7fa 0%,#e8f5e9 25%,#f1f8e9 50%,#e1f5fe 75%,#e0f2f1 100%);font-family:Segoe UI, Tahoma, Geneva, Verdana, sans-serif;margin:0}
+  </style>
+
+  <!-- External stylesheet (must be in same folder as index.html) -->
+  <link rel="stylesheet" href="/static-up/sign-up.css" />
+</head>
+<body>
+
+  <!-- LOGIN SCREEN (overlay) -->
+  <div id="loginScreen" aria-hidden="false">
+    <div id="loginOverlay"></div>
+
+    <div id="loginCard" role="dialog" aria-labelledby="loginTitle" aria-modal="true">
+      <header id="loginHeader">
+        <h1 id="loginTitle">Welcome to Sympthons Chat</h1>
+        <p class="login-subtitle" id="loginSubtitle">Please sign in to continue.</p>
+      </header>
+
+      <form id="loginForm" method="POST" action="/auth/login" autocomplete="off" novalidate>
+        <div class="form-row">
+          <label for="usernameInput">Email</label>
+          <input id="usernameInput" name="username" type="text" placeholder="Enter your email" required/>
+        </div>
+
+        <div class="form-row">
+          <label for="passwordInput">Password</label>
+          <div class="password-row">
+            <input id="passwordInput" name="password" type="password" placeholder="Enter password" required />
+            <button type="button" id="togglePassword" aria-label="Show password">👁</button>
+          </div>
+        </div>
+
+        <div class="form-row form-actions">
+          <button type="submit" id="loginBtn" class="primary-btn" style="width: 100%;">Log in</button>
+        </div>
+        </form>
+
+        <div id="loginMessage" role="status" aria-live="polite"></div>
+      </form>
+
+
+      <footer id="loginFooter">
+        <p class="small">Dont have an account? <a href="/register/register.html">Register</a></p>
+      </footer>
+    </div>
+  </div>
+  <!-- END LOGIN SCREEN -->
+
+  <!-- Animated background -->
+  <div class="background-animation">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+      <div class="orb orb-4"></div>
+      <div class="orb orb-5"></div>
+      <div class="sparkle sparkle-1">✨</div>
+      <div class="sparkle sparkle-2">✨</div>
+      <div class="sparkle sparkle-3">✨</div>
+      <div class="sparkle sparkle-4">✨</div>
+      <div class="sparkle sparkle-5">✨</div>
+  </div>
+  <script defer src="/static-up/sign-up.js"></script>
+</body>
+</html>

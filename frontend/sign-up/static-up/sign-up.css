@@ -1,3 +1,7 @@
+/* ===========================
+   ORIGINAL CHAT CSS (unchanged)
+   =========================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -90,22 +94,17 @@ body {
         transform: translate(40px, 30px) scale(1.05);
     }
 }
-.container {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-}
 
 .sparkle {
     position: absolute;
-    font-size: 26px;
+    font-size: 24px;
     animation: sparkleFloat 15s infinite ease-in-out;
     opacity: 0.6;
 }
 
 .sparkle-1 {
     top: 15%;
-    right: 20%;
+    left: 20%;
     animation-delay: 0s;
 }
 
@@ -117,13 +116,13 @@ body {
 
 .sparkle-3 {
     top: 40%;
-    right: 55%;
+    right: 15%;
     animation-delay: -6s;
 }
 
 .sparkle-4 {
     bottom: 20%;
-    right: 90%;
+    left: 60%;
     animation-delay: -9s;
 }
 
@@ -131,119 +130,6 @@ body {
     top: 25%;
     left: 70%;
     animation-delay: -12s;
-}
-.sparkle-6 {
-    bottom: 50%;
-    left: 30%;
-    animation-delay: -2s;
-}
-.sparkle-7 {
-    top: 80%;
-    right: 25%;
-    animation-delay: -5s;
-}   
-.sparkle-8 {
-    bottom: 15%;
-    left: 40%;
-    animation-delay: -8s;
-}
-.sparkle-9 {
-    top: 10%;
-    right: 30%;
-    animation-delay: -11s;
-}
-.sparkle-10 {
-    bottom: 30%;
-    left: 60%;
-    animation-delay: -14s;
-}
-.sparkle-11 {
-    bottom: 99%;
-    left: 80%;
-    animation-delay: -4s;
-}
-.sparkle-12 {
-    bottom: 25%;
-    left: 15%;
-    animation-delay: -7s;
-}   
-.sparkle-13 {
-    top: 60%;
-    right: 40%;
-    animation-delay: -10s;
-}
-.sparkle-14 {
-    bottom: 5%;
-    left: 80%;
-    animation-delay: -13s;
-}
-.sparkle-15 {
-    top: 5%;
-    right: 35%;
-    animation-delay: -1s;
-}
-.sparkle-16 {
-    bottom: 40%;
-    right: 5%;
-    animation-delay: -6s;
-}
-.sparkle-17 {
-    top: 45%;
-    left: 95%;
-    animation-delay: -9s;
-}
-.sparkle-18 {
-    bottom: 10%;
-    left: 75%;
-    animation-delay: -12s;
-}
-.sparkle-19 {
-    top: 20%;
-    right: 90%;
-    animation-delay: -15s;
-}
-.sparkle-20 {
-    bottom:75%;
-    right: 99%;
-    animation-delay: -8s;
-}  
-.book-btn {
-    position: fixed !important;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-
-    display: inline-flex !important;   /* keeps it only as wide as content */
-    align-items: center;
-    justify-content: center;
-
-    background: linear-gradient(to right, #68d391, #38b2ac);
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 20px;
-    font-size: 14px;
-    cursor: pointer;
-
-    width: auto !important;           /* forces content width */
-    max-width: fit-content !important;/* prevents full width */
-    height: auto !important;
-    text-align: center;
-    box-sizing: border-box;
-}
-
-.book-btn:hover {
-    opacity: 0.9;
-    transform: scale(1.05);
-    transition: all 0.2s ease;
-}
-.btn btn-info{
-    position: fixed !important;
-    top: 70px;
-    right: 20px;
-    z-index: 9999;
-    width:50px !important;
-    height:50px !important;
 }
 
 @keyframes sparkleFloat {
@@ -681,6 +567,10 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #4dd0e1, #66bb6a);
 }
+#loginBtn{
+    width:100% !important;
+    padding:12px 0;
+}
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -706,5 +596,211 @@ body {
 
     .message-content {
         max-width: 85%;
+    }
+}
+
+/* ===========================
+   LOGIN SCREEN STYLES (appended)
+   Uses same palette + glass effects to match chat UI
+   =========================== */
+
+/* Hide element utility */
+.hidden {
+    display: none !important;
+}
+
+/* Full-screen login overlay container */
+#loginScreen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000; /* above the app */
+    pointer-events: auto;
+}
+
+/* Slight dim overlay so background orbs are visible underneath */
+/* NOTE: pointer-events:none so clicks reach the login card (no freezing) */
+#loginOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 32, 20, 0.12);
+    backdrop-filter: blur(6px) saturate(120%);
+    pointer-events: none;
+}
+
+/* Login card (center box) */
+#loginCard {
+    position: relative;
+    width: 420px;
+    max-width: 95%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(240,250,245,0.85));
+    border-radius: 16px;
+    padding: 26px;
+    z-index: 2100;
+    box-shadow: 0 24px 60px rgba(6, 60, 45, 0.18);
+    border: 1px solid rgba(129,199,132,0.18);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: cardAppear 0.35s ease;
+    pointer-events: auto;
+}
+
+/* small appear animation */
+@keyframes cardAppear {
+    from { transform: translateY(8px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+#loginHeader h1, #loginTitle {
+    color: #004d40;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.login-subtitle {
+    color: #00695c;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-row label {
+    font-size: 13px;
+    color: #00695c;
+}
+
+.form-row input[type="text"],
+.form-row input[type="password"] {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(129,199,132,0.18);
+    background: rgba(255,255,255,0.9);
+    font-size: 14px;
+    color: #004d40;
+    outline: none;
+    transition: box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.form-row input:focus {
+    box-shadow: 0 8px 20px rgba(129,212,250,0.18);
+    border-color: rgba(77,208,225,0.5);
+}
+
+.password-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.password-row input {
+    flex: 1;
+}
+
+#togglePassword {
+    border: none;
+    background: linear-gradient(135deg, #80deea, #81c784);
+    color: #004d40;
+    padding: 8px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 6px 18px rgba(129,212,250,0.14);
+}
+
+/* Buttons */
+.primary-btn, .secondary-btn {
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-size: 14px;
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, #80deea 0%, #81c784 100%);
+    color: #003e33;
+    box-shadow: 0 8px 22px rgba(129,212,250,0.18);
+}
+
+.secondary-btn {
+    background: rgba(255,255,255,0.9);
+    border: 1px solid rgba(129,199,132,0.18);
+    color: #00695c;
+}
+
+/* Action row layout */
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+/* Demo accounts section */
+#demoAccounts {
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(129,199,132,0.12);
+}
+
+.demo-title {
+    font-size: 13px;
+    color: #005c4a;
+    margin-bottom: 8px;
+}
+
+#demoAccounts ul {
+    list-style: none;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.demo-account {
+    background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(129,199,132,0.14);
+    padding: 8px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #00695c;
+    font-size: 13px;
+}
+
+.demo-account:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(129,212,250,0.12);
+}
+
+/* Footer */
+#loginFooter .small {
+    font-size: 12px;
+    color: #00695c;
+    opacity: 0.9;
+    margin-top: 10px;
+}
+
+/* Responsive tweaks for narrow screens */
+@media (max-width: 480px) {
+    #loginCard {
+        width: 92%;
+        padding: 18px;
+    }
+    #togglePassword {
+        padding: 8px;
+        font-size: 12px;
+    }
+    .primary-btn, .secondary-btn {
+        padding: 10px;
+        font-size: 13px;
     }
 }
